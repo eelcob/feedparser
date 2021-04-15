@@ -23,7 +23,7 @@ CONF_SHOW_TOPN = "show_topn"
 
 DEFAULT_SCAN_INTERVAL = timedelta(hours=1)
 
-COMPONENT_REPO = "https://github.com/custom-components/sensor.feedparser/"
+COMPONENT_REPO = "https://github.com/eelcob/feedparser/"
 SCAN_INTERVAL = timedelta(minutes=10)
 ICON = "mdi:rss"
 
