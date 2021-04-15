@@ -1,0 +1,15 @@
+name: sensor.feedparser
+description: RSS feed custom component for Home Assistant
+type: component
+keywords:
+  - sensor
+  - feedparser
+  - rss
+  - feed
+  - list
+author:
+  name: Eelco Bode based on original feedparser
+license: MIT
+files:
+  - custom_components/feedparser/sensor.py
+  - custom_components/feedparser/manifest.json
