@@ -1,4 +1,13 @@
-add the following configuration:
+##Needed:
+## auto-entities card via HACS
+## mini media player via HACS
+
+##Todo:
+## Add play button which rotates news item every 20 seconds
+## Remove check on images from to fill media_image
+## See if possible to use returned link to use as push option
+
+1) add the following configuration:
 
 #TODO remove the check on image because now it's only used to check if image needs to be loaded
 media_player:
@@ -12,9 +21,9 @@ media_player:
       - link
       - image
 
-Import this component via HACS
+2) Import this component via HACS by adding https://github.com/eelco/feedparser to extra sources, this will give you the option to load this parser
 
-Add the following page to dd:
+3) Add the following page to dd:
 
 ### News
   - type: vertical-stack
