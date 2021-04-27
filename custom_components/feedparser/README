@@ -22,6 +22,7 @@ media_player:
       - image
 
 2) Import this component via HACS by adding https://github.com/eelco/feedparser to extra sources, this will give you the option to load this parser
+please note that the sensor.py is only needed for a Sensor component and not needed for this part, the media_player.py is the actual source creating the media player
 
 3) Add the following page to dd:
 
