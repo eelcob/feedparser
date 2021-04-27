@@ -1,25 +1,49 @@
-"""Feedparser sensor"""
+"""NOS News Media Player"""
+"""TODO: rotate news on play every x seconds"""
+"""TODO: If possible make link be the pressable link in the card"""
 
 import asyncio
 import re
+import time
 import feedparser
 import voluptuous as vol
+import logging
 from datetime import timedelta
 from dateutil import parser
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.media_player import DEVICE_CLASS_TV
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME
 
+from homeassistant.components.media_player.const import (
+    MEDIA_TYPE_IMAGE,
+    SUPPORT_NEXT_TRACK,
+    SUPPORT_PREVIOUS_TRACK,
+#    SUPPORT_PLAY,
+#    SUPPORT_STOP,
+#    SUPPORT_PAUSE,
+)
 
 try:
-    from homeassistant.components.media_player import MediaPlayerEntity
+    from homeassistant.components.media_player import (
+        MediaPlayerEntity as MediaPlayerDevice,
+    )
 except ImportError:
-    from homeassistant.components.media_player import MediaPlayerDevice as MediaPlayerEntity
+    from homeassistant.components.media_player import MediaPlayerDevice
 
-__version__ = "0.0.1"
+SUPPORT_NOS = (
+    SUPPORT_PREVIOUS_TRACK
+    | SUPPORT_NEXT_TRACK
+#    | SUPPORT_PAUSE
+#    | SUPPORT_STOP
+#    | SUPPORT_PLAY
+)
 
+__version__ = "0.0.2"
+
+global number
+number = 0
+
+_LOGGER = logging.getLogger(__name__)
 REQUIREMENTS = ["feedparser"]
 
 CONF_FEED_URL = "feed_url"
@@ -31,7 +55,7 @@ CONF_SHOW_TOPN = "show_topn"
 DEFAULT_SCAN_INTERVAL = timedelta(hours=1)
 
 COMPONENT_REPO = "https://github.com/eelcob/feedparser/"
-SCAN_INTERVAL = timedelta(minutes=10)
+SCAN_INTERVAL = timedelta(minutes=2)
 ICON = "mdi:rss"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -45,12 +69,11 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-
 @asyncio.coroutine
 def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     async_add_devices(
         [
-            FeedParserSensor(
+            NOSClient(
                 feed=config[CONF_FEED_URL],
                 name=config[CONF_NAME],
                 date_format=config[CONF_DATE_FORMAT],
@@ -62,8 +85,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
         True,
     )
 
-
-class FeedParserSensor(SensorEntity):
+class NOSClient(MediaPlayerDevice):
     def __init__(
         self,
         feed: str,
@@ -81,9 +103,9 @@ class FeedParserSensor(SensorEntity):
         self._exclusions = exclusions
         self._state = None
         self._entries = []
-        self._number = []
 
     def update(self):
+        #global num
         parsedFeed = feedparser.parse(self._feed)
 
         if not parsedFeed:
@@ -96,9 +118,7 @@ class FeedParserSensor(SensorEntity):
             )
             self._entries = []
 
-            number = 0
             for entry in parsedFeed.entries[: self._state]:
-                number += 1 
                 entryValue = {}
                 for key, value in entry.items():
                     if (
@@ -134,8 +154,6 @@ class FeedParserSensor(SensorEntity):
                 entryValue['entity_picture'] = entryValue['image']
                 entryValue['media_title'] = entryValue['title']
 
-        #        if number or number==1:
-        #            entryValue['number'] = number
                 self._entries.append(entryValue)
 
     @property
@@ -152,14 +170,49 @@ class FeedParserSensor(SensorEntity):
 
     @property
     def device_state_attributes(self):
-        #return {"entries": self._entries[0]}
-        key = frozenset(self._entries[0].items())
+        key = self.wherearewe()
         return key
-        #return {self._entries[0]}
 
     @property
-    def refresh(self):
-        data_size = len(parsedFeed.entries)
-        self.tree.delete(*self.tree.get_children())
-        self.tree.insert("", 0, values=(array[random.randrange(0, data_size)]))
-        self.tree.after(1000,self.refresh)
+    def media_content_type(self):
+        return MEDIA_TYPE_IMAGE
+
+    @property
+    def supported_features(self):
+        return SUPPORT_NOS
+
+    def wherearewe(self):
+        return frozenset(self._entries[number].items())
+
+    def async_media_next_track(self):
+        global number
+        number = number + 1
+        self.wherearewe()
+
+    def async_media_previous_track(self):
+        global number
+        number = number - 1
+        self.wherearewe()
+
+#    async def while_loop():
+#        self.media_next_track()
+#        await asyncio.sleep(20)
+#
+#    async def forever():
+#        while True:
+#            await while_loop()
+#
+#    def async_media_play_pause(self):
+#
+#        loop = asyncio.new_event_loop()
+#        asyncio.set_event_loop(loop)
+#        loop.run_forever(forever)
+#
+#        #loop.run_until_complete(media_next_track())
+#        self.media_next_track()
+#        global number
+#        while True:
+#            number = number + 1
+#            self.wherearewe()
+#            time.sleep(20)
+
