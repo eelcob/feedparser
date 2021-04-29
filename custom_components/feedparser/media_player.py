@@ -1,8 +1,6 @@
 """NOS News Media Player"""
 """TODO: rotate news on play every x seconds"""
 """TODO: If possible make link be the pressable link in the card"""
-"""TODO: Remove image dependancy and make it only on entity_picture"""
-"""TODO: Cleanup"""
 
 import asyncio
 import re
@@ -114,10 +112,10 @@ class NOSClient(MediaPlayerDevice):
     def update(self):
         parsedFeed = feedparser.parse(self._feed)
 
-        _LOGGER.warning("Parsing feed")
+        #_LOGGER.warning("Parsing feed")
 
         if not parsedFeed:
-            _LOGGER.warning("Parsing feed failed")
+            #_LOGGER.warning("Parsing feed failed")
             return False
         else:
             self._state = (
@@ -154,7 +152,7 @@ class NOSClient(MediaPlayerDevice):
 
                 self._entries.append(entryValue)
 
-        _LOGGER.warning("Feed Parsed")
+        #_LOGGER.warning("Feed Parsed")
 
     @property
     def name(self):
@@ -162,7 +160,7 @@ class NOSClient(MediaPlayerDevice):
 
     @property
     def state(self):
-        _LOGGER.warning("Updating State")
+        #_LOGGER.warning("Updating State")
         return self._state
 
     @property
@@ -183,18 +181,18 @@ class NOSClient(MediaPlayerDevice):
         return SUPPORT_NOS
 
     def wherearewe(self):
-        _LOGGER.warning("Returning number " + str(number))
+        #_LOGGER.warning("Returning number " + str(number))
         return frozenset(self._entries[number].items())
 
     def checkmax(self):
         global number
-        _LOGGER.warning("Checking Max")
+        #_LOGGER.warning("Checking Max")
         if number >= self._articles:
             number = 0
 
     def checkmin(self):
         global number
-        _LOGGER.warning("Checking Min")
+        #_LOGGER.warning("Checking Min")
         if number <= -1:
             number = self._articles
 
@@ -202,14 +200,14 @@ class NOSClient(MediaPlayerDevice):
         global number
         number = number + 1
         self.checkmax()
-        _LOGGER.warning("next " + str(number))
+        #_LOGGER.warning("next " + str(number))
         self.wherearewe()
 
     def async_media_previous_track(self):
         global number
         number = number - 1
         self.checkmin()
-        _LOGGER.warning("previous " + str(number))
+        #_LOGGER.warning("previous " + str(number))
         self.wherearewe()
 
 #    async def while_loop():
