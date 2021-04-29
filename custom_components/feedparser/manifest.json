@@ -1,8 +1,8 @@
 {
   "domain": "feedparser",
   "name": "Feedparser",
-  "version": "0.0.1",
-  "documentation": "https://github.com/eelcob/feedparser/README.md",
+  "version": "0.0.2",
+  "documentation": "https://github.com/eelcob/feedparser/blob/main/custom_components/feedparser/README",
   "dependencies": [],
   "codeowners": ["@eelcob"],
   "requirements": ["feedparser==6.0.2"]
