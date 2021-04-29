@@ -1,0 +1,69 @@
+#Needed:
+auto-entities card via HACS
+mini media player via HACS
+
+#Todo:
+Add play button which rotates news item every 20 seconds
+See if possible to use returned link to use as push option
+
+1) add the following configuration:
+
+media_player:
+  - platform: feedparser
+    name: NOS Feed
+    feed_url: 'http://feeds.nos.nl/nosnieuwsalgemeen'
+    articles: 17
+    inclusions:
+      - title
+      - entity_picture
+      - link
+
+2) Import this component via HACS by adding https://github.com/eelco/feedparser to extra sources, this will give you the option to load this parser
+please note that the sensor.py is only needed for a Sensor component and not needed for this part, the media_player.py is the actual source creating the media player
+
+3) Add the following page to dd:
+
+### News
+  - type: vertical-stack
+    cards:
+      - name: Nieuws
+        styles:
+          card:
+            - padding: '2% 0px'
+            - text-transform: uppercase
+            - font-size: 125%
+            - color: 'var(--dwains-theme-accent)'
+            - border-radius: 0%
+            - font-weight: 100
+            - letter-spacing: 10px
+            - --mdc-ripple-press-opacity: 0
+            - cursor: initial
+          name:
+            - font-weight: 900
+        type: 'custom:button-card'
+      - type: 'custom:auto-entities'
+        filter:
+          include:
+            - entity_id: media_player.nos_feed
+            #- entity_id: media_player.televi*
+              options:
+                type: 'custom:mini-media-player'
+                icon: mdi:newspaper-variant
+                artwork: cover
+                info: scroll
+                # See if possible to make On Click follow link 
+                #tap_action:
+                #   action: url
+                #   url: link
+                hide:
+                   power: true
+                   prev: false
+                   next: false
+                   play_pause: true
+                   play_stop: true
+        card:
+          type: entities
+
+
+
+
