@@ -1,6 +1,8 @@
 """NOS News Media Player"""
 """TODO: rotate news on play every x seconds"""
 """TODO: If possible make link be the pressable link in the card"""
+"""TODO: Remove image dependancy and make it only on entity_picture"""
+"""TODO: Cleanup"""
 
 import asyncio
 import re
@@ -11,7 +13,7 @@ import logging
 from datetime import timedelta
 from dateutil import parser
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.components.media_player import PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME
 
 from homeassistant.components.media_player.const import (
@@ -51,6 +53,7 @@ CONF_DATE_FORMAT = "date_format"
 CONF_INCLUSIONS = "inclusions"
 CONF_EXCLUSIONS = "exclusions"
 CONF_SHOW_TOPN = "show_topn"
+CONF_MAX_ARTICLES = "articles"
 
 DEFAULT_SCAN_INTERVAL = timedelta(hours=1)
 
@@ -62,6 +65,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_FEED_URL): cv.string,
+        vol.Required(CONF_MAX_ARTICLES, default=15): cv.positive_int,
         vol.Required(CONF_DATE_FORMAT, default="%a, %b %d %I:%M %p"): cv.string,
         vol.Optional(CONF_SHOW_TOPN, default=9999): cv.positive_int,
         vol.Optional(CONF_INCLUSIONS, default=[]): vol.All(cv.ensure_list, [cv.string]),
@@ -76,6 +80,7 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
             NOSClient(
                 feed=config[CONF_FEED_URL],
                 name=config[CONF_NAME],
+                articles=config[CONF_MAX_ARTICLES],
                 date_format=config[CONF_DATE_FORMAT],
                 show_topn=config[CONF_SHOW_TOPN],
                 inclusions=config[CONF_INCLUSIONS],
@@ -90,6 +95,7 @@ class NOSClient(MediaPlayerDevice):
         self,
         feed: str,
         name: str,
+        articles: str,
         date_format: str,
         show_topn: str,
         exclusions: str,
@@ -97,6 +103,7 @@ class NOSClient(MediaPlayerDevice):
     ):
         self._feed = feed
         self._name = name
+        self._articles = articles
         self._date_format = date_format
         self._show_topn = show_topn
         self._inclusions = inclusions
@@ -105,10 +112,12 @@ class NOSClient(MediaPlayerDevice):
         self._entries = []
 
     def update(self):
-        #global num
         parsedFeed = feedparser.parse(self._feed)
 
+        _LOGGER.warning("Parsing feed")
+
         if not parsedFeed:
+            _LOGGER.warning("Parsing feed failed")
             return False
         else:
             self._state = (
@@ -132,29 +141,20 @@ class NOSClient(MediaPlayerDevice):
 
                     entryValue[key] = value
 
-                if 'image' in self._inclusions and 'image' not in entryValue.keys():
+                if 'entity_picture' in self._inclusions and 'entity_picture' not in entryValue.keys():
                     image = []
                     images = []
-                    if 'summary' in entry.keys():
-                        images = re.findall(r"<img.+?src=\"(.+?)\".+?>", entry['summary'])
+                    if 'links' in entry.keys():
+                        images = re.findall("\'0\', \'href\': \'(.*jpg)", str(entry['links']))
                     if images:
-                        entryValue['image'] = images[0]
+                       entryValue['entity_picture'] = images[0]
                     else:
-                        if 'links' in entry.keys():
-                            images = re.findall("\'0\', \'href\': \'(.*jpg)", str(entry['links']))
-                        if image:
-                            entryValue['image'] = image
-                        else:
-                            if "media_content" in entry.keys():
-                               images = entry['media_content'][0]['url']
-                            if images:
-                               entryValue['image'] = images[0]
-                            else:
-                               entryValue['image'] = "https://www.home-assistant.io/images/favicon-192x192-full.png"
-                entryValue['entity_picture'] = entryValue['image']
+                       entryValue['entity_picture'] = "https://www.home-assistant.io/images/favicon-192x192-full.png"
                 entryValue['media_title'] = entryValue['title']
 
                 self._entries.append(entryValue)
+
+        _LOGGER.warning("Feed Parsed")
 
     @property
     def name(self):
@@ -162,6 +162,7 @@ class NOSClient(MediaPlayerDevice):
 
     @property
     def state(self):
+        _LOGGER.warning("Updating State")
         return self._state
 
     @property
@@ -182,16 +183,33 @@ class NOSClient(MediaPlayerDevice):
         return SUPPORT_NOS
 
     def wherearewe(self):
+        _LOGGER.warning("Returning number " + str(number))
         return frozenset(self._entries[number].items())
+
+    def checkmax(self):
+        global number
+        _LOGGER.warning("Checking Max")
+        if number >= self._articles:
+            number = 0
+
+    def checkmin(self):
+        global number
+        _LOGGER.warning("Checking Min")
+        if number <= -1:
+            number = self._articles
 
     def async_media_next_track(self):
         global number
         number = number + 1
+        self.checkmax()
+        _LOGGER.warning("next " + str(number))
         self.wherearewe()
 
     def async_media_previous_track(self):
         global number
         number = number - 1
+        self.checkmin()
+        _LOGGER.warning("previous " + str(number))
         self.wherearewe()
 
 #    async def while_loop():

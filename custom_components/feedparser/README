@@ -1,33 +1,3 @@
-found error:
-
-2021-04-27 23:43:55 ERROR (MainThread) [homeassistant.components.websocket_api.http.connection] [2745935760] list index out of range
-Traceback (most recent call last):
-  File "/usr/src/homeassistant/homeassistant/components/websocket_api/commands.py", line 143, in handle_call_service
-    await hass.services.async_call(
-  File "/usr/src/homeassistant/homeassistant/core.py", line 1480, in async_call
-    task.result()
-  File "/usr/src/homeassistant/homeassistant/core.py", line 1515, in _execute_service
-    await handler.job.target(service_call)
-  File "/usr/src/homeassistant/homeassistant/helpers/entity_component.py", line 206, in handle_service
-    await self.hass.helpers.service.entity_service_call(
-  File "/usr/src/homeassistant/homeassistant/helpers/service.py", line 649, in entity_service_call
-    future.result()  # pop exception if have
-  File "/usr/src/homeassistant/homeassistant/helpers/entity.py", line 692, in async_request_call
-    await coro
-  File "/usr/src/homeassistant/homeassistant/helpers/service.py", line 686, in _handle_entity_call
-    await result
-  File "/usr/local/lib/python3.8/concurrent/futures/thread.py", line 57, in run
-    result = self.fn(*self.args, **self.kwargs)
-  File "/config/custom_components/feedparser/media_player.py", line 195, in async_media_previous_track
-    self.wherearewe()
-  File "/config/custom_components/feedparser/media_player.py", line 185, in wherearewe
-    return frozenset(self._entries[number].items())
-IndexError: list index out of range
-
-## Maybe because of array higher then 19 or lower then 1?
-
-
-
 ##Needed:
 ## auto-entities card via HACS
 ## mini media player via HACS
@@ -44,12 +14,11 @@ media_player:
   - platform: feedparser
     name: NOS Feed
     feed_url: 'http://feeds.nos.nl/nosnieuwsalgemeen'
-    date_format: '%a, %b %d %I:%M %p'
+    articles: 17
     inclusions:
       - title
-      - media_title
+      - entity_picture
       - link
-      - image
 
 2) Import this component via HACS by adding https://github.com/eelco/feedparser to extra sources, this will give you the option to load this parser
 please note that the sensor.py is only needed for a Sensor component and not needed for this part, the media_player.py is the actual source creating the media player
@@ -94,9 +63,6 @@ please note that the sensor.py is only needed for a Sensor component and not nee
                    next: false
                    play_pause: true
                    play_stop: true
-
-                #   volume: true
-                #   power_state: true
         card:
           type: entities
 
