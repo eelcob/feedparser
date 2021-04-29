@@ -1,6 +1,6 @@
 {
   "name": "Feedparser-NOS",
   "homeassistant": "2021.4.0",
-  "domains": ["sensor"],
+  "domains": ["media_player"],
   "render_readme": true
 }
