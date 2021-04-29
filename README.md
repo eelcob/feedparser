@@ -1,14 +1,13 @@
-##Needed:
-## auto-entities card via HACS
-## mini media player via HACS
+#Needed:
+auto-entities card via HACS
+mini media player via HACS
 
-##Todo:
-## Add play button which rotates news item every 20 seconds
-## See if possible to use returned link to use as push option
+#Todo:
+Add play button which rotates news item every 20 seconds
+See if possible to use returned link to use as push option
 
 1) add the following configuration:
 
-#TODO remove the check on image because now it's only used to check if image needs to be loaded
 media_player:
   - platform: feedparser
     name: NOS Feed
